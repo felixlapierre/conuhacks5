@@ -1,0 +1,19 @@
+{
+  "name": "tunein-server",
+  "version": "1.0.0",
+  "description": "Server for TuneIn music player",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "http": "0.0.0",
+    "https": "^1.0.0",
+    "mongodb": "^3.5.2",
+    "mongoose": "^5.8.9"
+  }
+}
