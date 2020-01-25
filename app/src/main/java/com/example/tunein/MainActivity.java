@@ -14,11 +14,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.text.CollationElementIterator;
-
 public class MainActivity extends AppCompatActivity {
 
     MediaPlayer player;
+    Button playBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        playBtn = findViewById(R.id.playBtn);
         player = MediaPlayer.create(MainActivity.this, R.raw.song);
     }
 
@@ -61,13 +61,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playMusic(View view) {
-         player.start();
+        if(player.isPlaying()) {
+            player.pause();
+            playBtn.setText("Play");
+        } else {
+            player.start();
+            playBtn.setText("Pause");
+        }
     }
 
     public void stopMusic(View view) {
+        if(player.isPlaying()) {
+            playBtn.setText("Play");
+        }
+        
         player.stop();
-        player.release();
-
         player = MediaPlayer.create(MainActivity.this, R.raw.song);
     }
 
