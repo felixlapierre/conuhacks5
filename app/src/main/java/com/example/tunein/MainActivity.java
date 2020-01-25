@@ -18,8 +18,7 @@ import java.text.CollationElementIterator;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    boolean hasStartedPlaying = false;
+    MediaPlayer player;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -36,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        player = MediaPlayer.create(MainActivity.this, R.raw.song);
     }
 
     @Override
@@ -61,16 +61,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playMusic(View view) {
-        MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.song);
-        player.start();
+         player.start();
+    }
 
-        if(!hasStartedPlaying) {
-            hasStartedPlaying = true;
-        } else {
-            
-            hasStartedPlaying = false;
-            player.stop();
-            player.release();
-        }
+    public void stopMusic(View view) {
+        player.stop();
+        player.release();
+
+        player = MediaPlayer.create(MainActivity.this, R.raw.song);
+    }
+
+    public void nextSong(View view) {
+        // TODO
+    }
+
+    public void prevSong(View view) {
+        // TODO
     }
 }
