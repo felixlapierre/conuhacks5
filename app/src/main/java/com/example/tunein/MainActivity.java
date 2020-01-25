@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
     TextView latitudeText, longitudeText;
     int PERMISSION_ID = 69;
 
+    Button playBtn;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        playBtn = findViewById(R.id.playBtn);
         player = MediaPlayer.create(MainActivity.this, R.raw.song);
 
         latitudeText = findViewById(R.id.latitudeText);
@@ -85,13 +89,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playMusic(View view) {
-         player.start();
+        if(player.isPlaying()) {
+            player.pause();
+            playBtn.setText("Play");
+        } else {
+            player.start();
+            playBtn.setText("Pause");
+        }
     }
 
     public void stopMusic(View view) {
+        if(player.isPlaying()) {
+            playBtn.setText("Play");
+        }
+        
         player.stop();
-        player.release();
-
         player = MediaPlayer.create(MainActivity.this, R.raw.song);
     }
 
