@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -52,7 +53,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Url;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
     MediaPlayer player;
     FusedLocationProviderClient mFusedLocationClient;
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         createMockListSong();
         //player = MediaPlayer.create(MainActivity.this, R.raw.song);
 
-        final List<String> searchResults = new ArrayList<String>();
+        searchResults = new ArrayList<>();
         searchResults.add("song1");
         searchResults.add("song2");
         recyclerView = findViewById(R.id.my_recycler_view);
@@ -92,22 +93,6 @@ public class MainActivity extends AppCompatActivity {
         adapter = new SearchResultItem(searchResults);
         recyclerView.setAdapter(adapter);
 
-        SearchView searchview = findViewById(R.id.searchView);
-//        searchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-//            @Override
-//            public boolean onQueryTextChange(String newText) {
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean onQueryTextSubmit(String query) {
-//                insertSearchResults(query);
-//                return true;
-//            }
-//        });
-
-//        latitudeText = findViewById(R.id.latitudeText);
-//        longitudeText = findViewById(R.id.longitudeText);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         getSongResult = findViewById(R.id.getSongResult);
@@ -193,6 +178,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setIconifiedByDefault(false);
+        searchView.setOnQueryTextListener(this);
+        searchView.requestFocus();
         return true;
     }
 
@@ -412,7 +403,6 @@ public class MainActivity extends AppCompatActivity {
 
                 searchResults.clear();
 
-                String[] dataset = new String[songs.size()];
                 int i = 0;
                 for(Song s : songs) {
                     searchResults.add(s.getTitle());
@@ -430,5 +420,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        insertSearchResults(query);
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return false;
     }
 }
