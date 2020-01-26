@@ -302,6 +302,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                     Context context = getApplicationContext();
                                     Toast.makeText(context, "Latitude: " + location.getLatitude(), Toast.LENGTH_LONG).show();
                                     Toast.makeText(context, "Longitude: " + location.getLongitude(), Toast.LENGTH_LONG).show();
+                                    getNearbySongs();
 //                                    latitudeText.setText(location.getLatitude()+"");
 //                                    longitudeText.setText(location.getLongitude()+"");
                                 }
@@ -343,6 +344,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             Context context = getApplicationContext();
             Toast.makeText(context, "Latitude: " + mLastLocation.getLatitude(), Toast.LENGTH_LONG).show();
             Toast.makeText(context, "Longitude: " + mLastLocation.getLongitude(), Toast.LENGTH_LONG).show();
+            getNearbySongs();
 //            latitudeText.setText(mLastLocation.getLatitude()+"");
 //            longitudeText.setText(mLastLocation.getLongitude()+"");
         }
@@ -453,5 +455,54 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public boolean onQueryTextChange(String newText) {
         return false;
+    }
+
+
+
+    private void getNearbySongs() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://172.30.185.252:3000/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        TuneInApi tuneInApi = retrofit.create(TuneInApi.class);
+        Call<List<Song>> call = tuneInApi.getNearby();
+        call.enqueue(new Callback<List<Song>>() {
+            @Override
+            public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
+                if(!response.isSuccessful()) {
+                    getSongResult.setText("Code: " + response.code());
+                    return;
+                }
+
+                List<Song> songs = response.body();
+                for(Song song : songs) {
+                    String content = "\n";
+                    content += "id: " + song.getId() + "\n";
+                    content += "title: " + song.getTitle();
+
+                    //getSongResult.append(content);
+                }
+                //getSongResult.append(response.body());
+
+                searchResults.clear();
+
+                int i = 0;
+                for(Song s : songs) {
+                    searchResults.add(s.getTitle() + " --- " + s.getArtistName() + " --- " + s.getId());
+                    if(i >= 10)
+                        break;
+                }
+                adapter.notifyDataSetChanged();
+
+
+            }
+
+            @Override
+            public void onFailure(Call<List<Song>> call, Throwable t) {
+                getSongResult.setText("LIGMA BALLS" + t.getMessage());
+            }
+        });
+
     }
 }
