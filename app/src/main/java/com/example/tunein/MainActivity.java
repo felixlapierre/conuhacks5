@@ -20,6 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Looper;
 import android.provider.Settings;
@@ -27,6 +30,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +38,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.CollationElementIterator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +53,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Url;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
     MediaPlayer player;
     FusedLocationProviderClient mFusedLocationClient;
@@ -65,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
     List<Song> songs;
     String urlToPlay;
 
+    private RecyclerView recyclerView;
+    private RecyclerView.Adapter adapter;
+    private RecyclerView.LayoutManager layoutManager;
+    private List<String> searchResults;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,10 +88,24 @@ public class MainActivity extends AppCompatActivity {
         createMockListSong();
         //player = MediaPlayer.create(MainActivity.this, R.raw.song);
 
+        searchResults = new ArrayList<>();
+        searchResults.add("song1");
+        searchResults.add("song2");
+        recyclerView = findViewById(R.id.my_recycler_view);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TextView tv = (TextView) v;
+                String str = tv.getText().toString();
+                String[] info = str.split(" --- ");
+                getSong(info[2], info[0], info[1], v);
+            }
+        };
+        adapter = new SearchResultItem(searchResults, listener);
+        recyclerView.setAdapter(adapter);
 
-
-//        latitudeText = findViewById(R.id.latitudeText);
-//        longitudeText = findViewById(R.id.longitudeText);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         getSongResult = findViewById(R.id.getSongResult);
@@ -106,9 +130,22 @@ public class MainActivity extends AppCompatActivity {
                     content += "id: " + song.getId() + "\n";
                     content += "title: " + song.getTitle();
 
-                    getSongResult.append(content);
+                    //getSongResult.append(content);
                 }
                  //getSongResult.append(response.body());
+
+                searchResults.clear();
+
+                String[] dataset = new String[songs.size()];
+                int i = 0;
+                for(Song s : songs) {
+                    searchResults.add(s.getTitle());
+                    if(i >= 10)
+                        break;
+                }
+                adapter.notifyDataSetChanged();
+
+
             }
 
             @Override
@@ -117,12 +154,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    public void getFirstSong(final View view) {
+        Song song = songs.get(0);
+        getSong(""+ song.getId(),
+                "" + song.getTitle(), "" + song.getArtistName(), view);
+    }
 
-    public void getFirstSong(final View view){
+    public void getSong(String id, String title, String name, final View view) {
         Context context = getApplicationContext();
-        Toast.makeText(context, "ID: " + songs.get(0).getId(), Toast.LENGTH_LONG).show();
-        songTitle.setText(songs.get(0).getTitle());
-        artistName.setText(songs.get(0).getArtistName());
+        Toast.makeText(context, "ID: " + id, Toast.LENGTH_LONG).show();
+        songTitle.setText(title);
+        artistName.setText(name);
 
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -131,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         TuneInApi tuneInApi = retrofit.create(TuneInApi.class);
-        Call<List<String>> call = tuneInApi.getPLayURL(songs.get(1).getId());
+        Call<List<String>> call = tuneInApi.getPLayURL(Long.parseLong(id));
         call.enqueue(new Callback<List<String>>() {
             @Override
             public void onResponse(Call<List<String>> call, Response<List<String>> response) {
@@ -158,6 +200,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setIconifiedByDefault(false);
+        searchView.setOnQueryTextListener(this);
+        searchView.requestFocus();
         return true;
     }
 
@@ -347,5 +395,63 @@ public class MainActivity extends AppCompatActivity {
         Song song2 = new Song(45301912,"Heavy Metal","Rock",400,"Test","Prong", "https://cdn.apps.playnetwork.com/master/bd4a1bcb2dbfe9bfc8058cef0ad0b9adfc16591159471e08fc0fed6fefd9e995.ogg?Signature=K3rk3a3-IeW4fTO-poUILGp5Fb5BQDVDxuhqTdTkWc1-KDTKga8-HcQ8TdkpP51TFLJ8ozdcKQ0Ri1i-W4jIjL0QYSj2zmOUlKoxXhDpXI1bBgeH-YyxeUWSqmGECP7nM~6Fl5dQr7CR3BVtQsrqsgCLZJvfQHe3VQwX6cv7OavsWQZ36dE3ZdHLRQdIr-S9E61VSoYQs~Wj63fRVNULi~FLWIc7xZ7jGD47siCNFu0Q7lZxpuouJlOK8J8CDb7sdMcizLWy3LfsQ04bmWWohtffFNSe1g-oRJ7F-HRRdcna-zlr98REIsACJ04RGm8sSo3~949U4nbBZ2ys8cxaBA__&Key-Pair-Id=APKAJ4GOPJEICF5TREYA&Expires=1580044251");
         bonjour[0] = song1;
         bonjour[1] = song2;
+    }
+
+    private void insertSearchResults(String query) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://172.30.185.252:3000/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        TuneInApi tuneInApi = retrofit.create(TuneInApi.class);
+        Call<List<Song>> call = tuneInApi.getSongs(query);
+        call.enqueue(new Callback<List<Song>>() {
+            @Override
+            public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
+                if(!response.isSuccessful()) {
+                    getSongResult.setText("Code: " + response.code());
+                    return;
+                }
+
+                List<Song> songs = response.body();
+                for(Song song : songs) {
+                    String content = "\n";
+                    content += "id: " + song.getId() + "\n";
+                    content += "title: " + song.getTitle();
+
+                    //getSongResult.append(content);
+                }
+                //getSongResult.append(response.body());
+
+                searchResults.clear();
+
+                int i = 0;
+                for(Song s : songs) {
+                    searchResults.add(s.getTitle() + " --- " + s.getArtistName() + " --- " + s.getId());
+                    if(i >= 10)
+                        break;
+                }
+                adapter.notifyDataSetChanged();
+
+
+            }
+
+            @Override
+            public void onFailure(Call<List<Song>> call, Throwable t) {
+                getSongResult.setText("LIGMA BALLS" + t.getMessage());
+            }
+        });
+
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        insertSearchResults(query);
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return false;
     }
 }

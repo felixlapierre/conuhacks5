@@ -35,6 +35,11 @@ public class SearchingActivity extends AppCompatActivity implements SearchView.O
 
         parentList = new ArrayList<ParentRow>();
         showTheseParentlist = new ArrayList<ParentRow>();
+
+    }
+
+    public void onSearch(View view) {
+
     }
 
     private void loadData() {
@@ -70,16 +75,17 @@ public class SearchingActivity extends AppCompatActivity implements SearchView.O
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        searchItem = menu.findItem(R.id.action_search);
-        searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconifiedByDefault(false);
-        searchView.setOnQueryTextListener(this);
-        searchView.setOnCloseListener(this);
-        searchView.requestFocus();
+        return false;
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
+//        searchItem = menu.findItem(R.id.action_search);
+//        searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+//        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+//        searchView.setIconifiedByDefault(false);
+//        searchView.setOnQueryTextListener(this);
+//        searchView.setOnCloseListener(this);
+//        searchView.requestFocus();
 
-        return true;
+        //return true;
     }
 
     @Override
@@ -107,4 +113,6 @@ public class SearchingActivity extends AppCompatActivity implements SearchView.O
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
+
+
 }
