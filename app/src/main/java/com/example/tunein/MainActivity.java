@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
     int PERMISSION_ID = 69;
     Button playBtn;
     TextView getSongResult;
+    TextView songTitle;
+    TextView artistName;
     boolean musicIsPlaying = false;
     boolean musicIsPaused = false;
     int indexOfSongs = 0;
@@ -68,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        songTitle = findViewById(R.id.songTitle) ;
+        artistName = findViewById(R.id.artistName);
         setSupportActionBar(toolbar);
 
         playBtn = findViewById(R.id.playBtn);
@@ -117,6 +121,9 @@ public class MainActivity extends AppCompatActivity {
     public void getFirstSong(final View view){
         Context context = getApplicationContext();
         Toast.makeText(context, "ID: " + songs.get(0).getId(), Toast.LENGTH_LONG).show();
+        songTitle.setText(songs.get(0).getTitle());
+        artistName.setText(songs.get(0).getArtistName());
+
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://172.30.185.252:3000/")
