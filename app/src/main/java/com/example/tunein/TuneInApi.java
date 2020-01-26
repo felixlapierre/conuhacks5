@@ -6,6 +6,6 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 
 public interface TuneInApi {
-    @GET("status")
+    @GET("search")
     Call<List<Song>> getSongs();
 }

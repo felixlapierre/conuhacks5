@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
         getSongResult = findViewById(R.id.getSongResult);
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://172.30.184.91:3000/")
+                .baseUrl("http://172.30.185.252:3000/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
