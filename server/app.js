@@ -24,11 +24,11 @@ app.get('/play', function(req, res) {
     const lon = req.query.lon || -73.578964;
     
     octave.play(id).then((result) => {
-        if(result.playUrl) {
-            res.json({playUrl: result.playUrl});
+        if(result[0] != undefined) {
+            res.json(result);
             plays.save(result, lat, lon);
         } else {
-            res.status(404).send();
+            res.status(404).send("Song has no playUrl");
         }
     }).catch((err) => {
         console.log(err);
