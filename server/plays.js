@@ -69,3 +69,16 @@ module.exports.save = function(info, lat, lon) {
         if(err) console.log(err);
     });
 }
+
+module.exports.getNearby = function(lat, lon) {
+    return new Promise((resolve, reject) => {
+        PlayModel.find({}, (err, results) => {
+            if(err) {
+                reject(err);
+                return;
+            }
+
+            resolve(results);
+        })
+    })
+}
