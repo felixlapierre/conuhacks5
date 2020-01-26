@@ -96,14 +96,13 @@ public class MainActivity extends AppCompatActivity {
 
                 List<Song> songs = response.body();
                 for(Song song : songs) {
-                    String content = "";
-                    content += "message" + song.getMessage();
-//                    content += "id: " + song.getId() + "\n";
-//                    content += "title: " + song.getTitle();
+                    String content = "\n";
+                    content += "id: " + song.getId() + "\n";
+                    content += "title: " + song.getTitle();
 
                     getSongResult.append(content);
                 }
-                 // getSongResult.append(response.body());
+                 //getSongResult.append(response.body());
             }
 
             @Override
