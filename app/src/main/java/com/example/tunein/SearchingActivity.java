@@ -27,7 +27,6 @@ public class SearchingActivity extends AppCompatActivity implements SearchView.O
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_searching);
 
         searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
