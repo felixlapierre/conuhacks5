@@ -49,5 +49,23 @@ PlayModel.find({"id": 7782908}, (err, athletes) => {
 })
 
 module.exports.save = function(info, lat, lon) {
-    console.log("Pretend I just saved  song " + info.id);
+    //TEMP: Remove other plays with the same ID so we don't fill up the database
+    PlayModel.deleteMany({"id": info.id}, (err) => {
+        if(err) console.log(err);
+    })
+
+    var newPlay = new PlayModel({
+        "id": info.id,
+        "lat": lat,
+        "long": lon,
+        "styleName": info.styleName,
+        "genreName": info.genreName,
+        "duration": info.duration,
+        "title": info.title,
+        "artistName": info.artistName
+    });
+
+    newPlay.save((err) => {
+        if(err) console.log(err);
+    });
 }

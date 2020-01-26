@@ -26,11 +26,10 @@ app.get('/play', function(req, res) {
     octave.play(id).then((result) => {
         if(result.playUrl) {
             res.json({playUrl: result.playUrl});
+            plays.save(result, lat, lon);
         } else {
             res.status(404).send();
         }
-
-        plays.save(result, lat, lon);
     }).catch((err) => {
         console.log(err);
         res.status(500).send();
