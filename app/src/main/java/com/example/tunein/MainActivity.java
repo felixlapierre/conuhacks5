@@ -64,11 +64,13 @@ public class MainActivity extends AppCompatActivity {
     boolean musicIsPaused = false;
     int indexOfSongs = 0;
     Song[] bonjour = new Song[2];
+    List<Song> songs;
+    String urlToPlay;
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter adapter;
     private RecyclerView.LayoutManager layoutManager;
-    private String[] searchResults;
+    private List<String> searchResults;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,18 +93,18 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         SearchView searchview = findViewById(R.id.searchView);
-        searchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                insertSearchResults(query);
-                return true;
-            }
-        });
+//        searchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                return false;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                insertSearchResults(query);
+//                return true;
+//            }
+//        });
 
 //        latitudeText = findViewById(R.id.latitudeText);
 //        longitudeText = findViewById(R.id.longitudeText);
@@ -115,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         TuneInApi tuneInApi = retrofit.create(TuneInApi.class);
-        Call<List<Song>> call = tuneInApi.getSongs();
+        Call<List<Song>> call = tuneInApi.getSongs("test");
         call.enqueue(new Callback<List<Song>>() {
             @Override
             public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
@@ -124,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                List<Song> songs = response.body();
+                songs = response.body();
                 for(Song song : songs) {
                     String content = "\n";
                     content += "id: " + song.getId() + "\n";
@@ -154,9 +156,37 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    public void getFirstSong(final View view){
+        Context context = getApplicationContext();
+        Toast.makeText(context, "ID: " + songs.get(0).getId(), Toast.LENGTH_LONG).show();
 
-    public void onSearchBaybee(View view) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://172.30.185.252:3000/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
+        TuneInApi tuneInApi = retrofit.create(TuneInApi.class);
+        Call<List<String>> call = tuneInApi.getPLayURL(songs.get(1).getId());
+        call.enqueue(new Callback<List<String>>() {
+            @Override
+            public void onResponse(Call<List<String>> call, Response<List<String>> response) {
+                if(!response.isSuccessful()) {
+                    getSongResult.setText("Code: " + response.code());
+                    return;
+                }
+
+                List<String> urls = response.body();
+                getSongResult.setText(urls.get(0));
+                urlToPlay = urls.get(0);
+                playMusic(view);
+                //getSongResult.append(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<List<String>> call, Throwable t) {
+                getSongResult.setText("LIGMA BALLS" + t.getMessage());
+            }
+        });
     }
 
     @Override
@@ -198,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
                 player = new MediaPlayer();
                 player.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 //player.setDataSource("https://cdn.apps.playnetwork.com/master/a5931c0db476ea9e4406dfd0a362e8839190e0ef38a4d52b397989480b85b7b4.ogg?Signature=dRMUViSp5AP91Lh1GUm49NDx9mhJ8745dJxUNg6jN1UKMLmEM-YEeQ4tykzAvACCVzslspO6yac3SbEvnBR--dQDgnqkM7YbxWSSdSFWxPDkIF8I-Qy2-XXZKV6e-595PAF4nScgEZsB7p224VME2p8vjqj9EaRjful6t1aKnPNyMPZum9ISZSyBe8~vQyGKa5Ho0kLQ4R6xEresXQKsS~WV7hD-b3rtQsHApvrqNXQvItfe1gBWBqgFzrqCdGE3vXkTYChOn9KXCZiC~3IAP8y2kQV3Gvj6GbAFMe6MEWpwnLbl8S87xm7C7fkSOBNTBHsmO7sZ14z284oyMZSmNg__&Key-Pair-Id=APKAJ4GOPJEICF5TREYA&Expires=1580026714");
-                player.setDataSource(bonjour[indexOfSongs].getPlayURL());
+                player.setDataSource(urlToPlay);
                 player.prepare();
                 player.start();
                 playBtn.setText("Pause");
@@ -361,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         TuneInApi tuneInApi = retrofit.create(TuneInApi.class);
-        Call<List<Song>> call = tuneInApi.getSongs();
+        Call<List<Song>> call = tuneInApi.getSongs(query);
         call.enqueue(new Callback<List<Song>>() {
             @Override
             public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
