@@ -24,8 +24,8 @@ app.get('/play', function(req, res) {
     const lon = req.query.lon || -73.578964;
     
     octave.play(id).then((result) => {
-        if(result[0] != undefined) {
-            res.json(result);
+        if(result.playUrl != undefined) {
+            res.json([result.playUrl]);
             plays.save(result, lat, lon);
         } else {
             res.status(404).send("Song has no playUrl");
@@ -37,12 +37,8 @@ app.get('/play', function(req, res) {
 })
 
 app.get('/nearby', function(req, res) {
-    const lat = req.query.lat;
-    const lon = req.query.lon;
-    if(lat === undefined || lon === undefined) {
-        res.status(400).send("lat and lon are required in query string");
-        return;
-    }
+    const lat = req.query.lat || 5;
+    const lon = req.query.lon || 5;
 
     plays.getNearby(lat, lon).then((result) => {
         res.json(result);
