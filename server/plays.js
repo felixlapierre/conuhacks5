@@ -48,4 +48,6 @@ PlayModel.find({"id": 7782908}, (err, athletes) => {
     }
 })
 
-module.exports = {};
+module.exports.save = function(info, lat, lon) {
+    console.log("Pretend I just saved  song " + info.id);
+}

@@ -1,47 +1,56 @@
-const http = require('http');
-const https = require('https');
+var unirest = require("unirest");
 
-function getJson(options, onResult) {
-    console.log('rest::getJSON');
-    let output = '';
-    const port = https;
-    const req = port.request(options, (res) => {
-        console.log(`${options.host} : ${res.statusCode}`);
+module.exports.search = function (query, size) {
+    return new Promise((resolve, reject) => {
+        var req = unirest("GET", "https://conuhacks-2020.tsp.cld.touchtunes.com/v1/songs");
 
-        res.setEncoding('utf8');
-        res.on('data', (chunk) => {
-            output += chunk;
-        })
+        req.query({
+            "query": query,
+            "size": size
+        });
 
-        res.on('end', () => {
-            let obj = JSON.parse(output);
+        req.headers({
+            "cache-control": "no-cache",
+            "Connection": "keep-alive",
+            "Accept-Encoding": "gzip, deflate",
+            "Host": "conuhacks-2020.tsp.cld.touchtunes.com",
+            "Postman-Token": "01b7ae42-3f45-4fdb-a884-b55e3265474d,6a3c2cca-69e8-4055-9ee9-043a76973fa3",
+            "Cache-Control": "no-cache",
+            "Accept": "*/*",
+            "User-Agent": "PostmanRuntime/7.20.1",
+            "Authorization": "x2ahq2gd9xo14e83x4339i95jlwe7boi"
+        });
 
-            onResult(res.statusCode, obj);
-        })
-    })
 
-    req.on('error', (err) => {
-        console.log(err);
+        req.end(function (res) {
+            if (res.error) reject(res.error);
+            else resolve(res.body);
+        });
     })
 }
 
-module.exports = {};
-module.exports.search = function(query, results) {
+module.exports.play = function (id) {
     return new Promise((resolve, reject) => {
-        const path = `/vi/songs?query=${query}&results=${results}`;
-        const options = {
-            host: 'conuhacks-2020.tsp.cld.touchtunes.com',
-            path: path,
-            method: 'GET',
-            headers: {
-                'Authorization': 'x2ahq2gd9xo14e83x4339i95jlwe7boi'
-            }
-        }
-    
-        getJson(options, (statusCode, result) => {
-            console.log(`onResult: (${statusCode})\n\n${JSON.stringify(result)}`);
-    
-            resolve(result);
-        })
+        var unirest = require("unirest");
+
+        var req = unirest("GET", `https://conuhacks-2020.tsp.cld.touchtunes.com/v1/songs/${id}`);
+
+        req.headers({
+            "cache-control": "no-cache",
+            "Connection": "keep-alive",
+            "Accept-Encoding": "gzip, deflate",
+            "Host": "conuhacks-2020.tsp.cld.touchtunes.com",
+            "Postman-Token": "64fb2817-1486-495c-8c01-d3ee99c35b8f,f91100c7-e0b4-4200-9358-2374d678ee7d",
+            "Cache-Control": "no-cache",
+            "Accept": "*/*",
+            "User-Agent": "PostmanRuntime/7.20.1",
+            "Authorization": "x2ahq2gd9xo14e83x4339i95jlwe7boi"
+        });
+
+
+        req.end(function (res) {
+            if (res.error) reject(res.error);
+            else resolve(res.body);
+        });
     })
 }

@@ -8,8 +8,29 @@ app.get('/status', function(req, res) {
 })
 
 app.get('/search', function(req, res) {
-    octave.search('technologic', 30).then((result) => {
+    const query = req.query || "technologic";
+    const size = req.size || 30;
+    octave.search(query, size).then((result) => {
         res.json(result);
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send();
+    })
+})
+
+app.get('/play', function(req, res) {
+    const id = req.id || 7782908;
+    const lat = req.lat || 45.495302;
+    const lon = req.lon || -73.578964;
+    
+    octave.play(id).then((result) => {
+        if(result.playUrl) {
+            res.json({playUrl: result.playUrl});
+        } else {
+            res.status(404).send();
+        }
+
+        plays.save(result, lat, lon);
     }).catch((err) => {
         console.log(err);
         res.status(500).send();
