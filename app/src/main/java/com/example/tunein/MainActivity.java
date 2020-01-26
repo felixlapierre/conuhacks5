@@ -161,6 +161,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void getSong(String id, String title, String name, final View view) {
+        if(musicIsPlaying || musicIsPaused){
+            stopMusic(view);
+        }
+
         Context context = getApplicationContext();
         Toast.makeText(context, "ID: " + id, Toast.LENGTH_LONG).show();
         songTitle.setText(title);
