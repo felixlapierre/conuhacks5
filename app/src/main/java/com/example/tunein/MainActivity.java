@@ -94,7 +94,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         recyclerView = findViewById(R.id.my_recycler_view);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new SearchResultItem(searchResults);
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TextView tv = (TextView) v;
+                String str = tv.getText().toString();
+                String[] info = str.split(" --- ");
+                getSong(info[2], info[0], info[1], v);
+            }
+        };
+        adapter = new SearchResultItem(searchResults, listener);
         recyclerView.setAdapter(adapter);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -145,11 +154,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             }
         });
     }
-    public void getFirstSong(final View view){
+    public void getFirstSong(final View view) {
+        Song song = songs.get(0);
+        getSong(""+ song.getId(),
+                "" + song.getTitle(), "" + song.getArtistName(), view);
+    }
+
+    public void getSong(String id, String title, String name, final View view) {
         Context context = getApplicationContext();
-        Toast.makeText(context, "ID: " + songs.get(0).getId(), Toast.LENGTH_LONG).show();
-        songTitle.setText(songs.get(0).getTitle());
-        artistName.setText(songs.get(0).getArtistName());
+        Toast.makeText(context, "ID: " + id, Toast.LENGTH_LONG).show();
+        songTitle.setText(title);
+        artistName.setText(name);
 
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -158,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 .build();
 
         TuneInApi tuneInApi = retrofit.create(TuneInApi.class);
-        Call<List<String>> call = tuneInApi.getPLayURL(songs.get(1).getId());
+        Call<List<String>> call = tuneInApi.getPLayURL(Long.parseLong(id));
         call.enqueue(new Callback<List<String>>() {
             @Override
             public void onResponse(Call<List<String>> call, Response<List<String>> response) {
@@ -412,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
                 int i = 0;
                 for(Song s : songs) {
-                    searchResults.add(s.getTitle());
+                    searchResults.add(s.getTitle() + " --- " + s.getArtistName() + " --- " + s.getId());
                     if(i >= 10)
                         break;
                 }

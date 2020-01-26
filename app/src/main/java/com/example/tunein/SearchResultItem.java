@@ -1,6 +1,7 @@
 package com.example.tunein;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 public class SearchResultItem extends RecyclerView.Adapter<SearchResultItem.MyViewHolder> {
     private List<String> dataset;
+    private View.OnClickListener listener;
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView textView;
@@ -19,12 +21,14 @@ public class SearchResultItem extends RecyclerView.Adapter<SearchResultItem.MyVi
         }
     }
 
-    public SearchResultItem(List<String> dataset) {
+    public SearchResultItem(List<String> dataset, View.OnClickListener onclick) {
         this.dataset = dataset;
+        this.listener = onclick;
     }
 
     public SearchResultItem.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         TextView v = new TextView(parent.getContext());
+        v.setOnClickListener(listener);
         //TextView v = (TextView) LayoutInflater.from(parent.getContext()).inflate(R.layout.my_text_view, parent, false);
 
         MyViewHolder vh = new MyViewHolder(v);
