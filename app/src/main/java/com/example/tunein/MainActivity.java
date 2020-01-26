@@ -29,8 +29,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.CollationElementIterator;
+import java.util.List;
 
 import com.google.android.gms.location.*;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,9 +45,8 @@ public class MainActivity extends AppCompatActivity {
     FusedLocationProviderClient mFusedLocationClient;
     TextView latitudeText, longitudeText;
     int PERMISSION_ID = 69;
-
     Button playBtn;
-
+    TextView getSongResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +70,39 @@ public class MainActivity extends AppCompatActivity {
         longitudeText = findViewById(R.id.longitudeText);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        getSongResult = findViewById(R.id.getSongResult);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://172.30.184.91:3000/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        TuneInApi tuneInApi = retrofit.create(TuneInApi.class);
+        Call<List<Song>> call = tuneInApi.getSongs();
+        call.enqueue(new Callback<List<Song>>() {
+            @Override
+            public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
+                if(!response.isSuccessful()) {
+                    getSongResult.setText("Code: " + response.code());
+                    return;
+                }
+
+                List<Song> songs = response.body();
+                for(Song song : songs) {
+                    String content = "";
+                    content += "message" + song.getMessage();
+//                    content += "id: " + song.getId() + "\n";
+//                    content += "title: " + song.getTitle();
+
+                    getSongResult.append(content);
+                }
+                 // getSongResult.append(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<List<Song>> call, Throwable t) {
+                getSongResult.setText("LIGMA BALLS" + t.getMessage());
+            }
+        });
     }
 
     @Override
@@ -212,6 +251,5 @@ public class MainActivity extends AppCompatActivity {
         if (checkPermissions()) {
             getLastLocation();
         }
-
     }
 }
