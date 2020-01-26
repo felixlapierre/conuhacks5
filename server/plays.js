@@ -70,6 +70,13 @@ module.exports.save = function(info, lat, lon) {
     });
 }
 
+function distance(play, lat, lon) {
+    var playlat = play.lat;
+    var playlon = play.lon;
+
+    return Math.sqrt((lat - playlat) * (lat - playlat) + (lon - playlon) * (lon - playlon));
+}
+
 module.exports.getNearby = function(lat, lon) {
     return new Promise((resolve, reject) => {
         PlayModel.find({}, (err, results) => {
@@ -77,6 +84,10 @@ module.exports.getNearby = function(lat, lon) {
                 reject(err);
                 return;
             }
+
+            results.sort((document1, document2) => {
+                return distance(document1, lat, lon) - distance(document2, lat, lon);
+            });
 
             resolve(results);
         })
