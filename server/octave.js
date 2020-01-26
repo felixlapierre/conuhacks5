@@ -50,7 +50,7 @@ module.exports.play = function (id) {
 
         req.end(function (res) {
             if (res.error) reject(res.error);
-            else resolve([res.body.playUrl]);
+            else resolve(res.body);
         });
     })
 }

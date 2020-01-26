@@ -62,7 +62,7 @@ module.exports.save = function(info, lat, lon) {
         "genreName": info.genreName,
         "duration": info.duration,
         "title": info.title,
-        "artistName": info.artist
+        "artistName": info.artist.name
     });
 
     newPlay.save((err) => {
