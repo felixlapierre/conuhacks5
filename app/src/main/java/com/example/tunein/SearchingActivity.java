@@ -5,9 +5,11 @@ import androidx.core.view.MenuItemCompat;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.ListAdapter;
 import android.widget.SearchView;
@@ -101,4 +103,8 @@ public class SearchingActivity extends AppCompatActivity implements SearchView.O
         return false;
     }
 
+    public void crashApp(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
+}
