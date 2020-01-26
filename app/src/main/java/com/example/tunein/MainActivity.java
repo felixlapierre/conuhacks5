@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 
@@ -15,6 +16,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -28,8 +30,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.CollationElementIterator;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import com.google.android.gms.location.*;
 
@@ -38,15 +46,20 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Url;
 
 public class MainActivity extends AppCompatActivity {
 
     MediaPlayer player;
     FusedLocationProviderClient mFusedLocationClient;
-    TextView latitudeText, longitudeText;
+//    TextView latitudeText, longitudeText;
     int PERMISSION_ID = 69;
     Button playBtn;
     TextView getSongResult;
+    boolean musicIsPlaying = false;
+    boolean musicIsPaused = false;
+    int indexOfSongs = 0;
+    Song[] bonjour = new Song[2];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,20 +67,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         playBtn = findViewById(R.id.playBtn);
-        player = MediaPlayer.create(MainActivity.this, R.raw.song);
+        createMockListSong();
+        //player = MediaPlayer.create(MainActivity.this, R.raw.song);
 
-        latitudeText = findViewById(R.id.latitudeText);
-        longitudeText = findViewById(R.id.longitudeText);
+
+
+//        latitudeText = findViewById(R.id.latitudeText);
+//        longitudeText = findViewById(R.id.longitudeText);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         getSongResult = findViewById(R.id.getSongResult);
@@ -128,30 +136,63 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playMusic(View view) {
-        if(player.isPlaying()) {
+        if(musicIsPlaying) {
             player.pause();
+            musicIsPaused = true;
             playBtn.setText("Play");
-        } else {
+            musicIsPlaying = false;
+
+        } else if(musicIsPaused) {
             player.start();
+            musicIsPaused = false;
+            musicIsPlaying = true;
             playBtn.setText("Pause");
+        } else {
+            try {
+                player = new MediaPlayer();
+                player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                //player.setDataSource("https://cdn.apps.playnetwork.com/master/a5931c0db476ea9e4406dfd0a362e8839190e0ef38a4d52b397989480b85b7b4.ogg?Signature=dRMUViSp5AP91Lh1GUm49NDx9mhJ8745dJxUNg6jN1UKMLmEM-YEeQ4tykzAvACCVzslspO6yac3SbEvnBR--dQDgnqkM7YbxWSSdSFWxPDkIF8I-Qy2-XXZKV6e-595PAF4nScgEZsB7p224VME2p8vjqj9EaRjful6t1aKnPNyMPZum9ISZSyBe8~vQyGKa5Ho0kLQ4R6xEresXQKsS~WV7hD-b3rtQsHApvrqNXQvItfe1gBWBqgFzrqCdGE3vXkTYChOn9KXCZiC~3IAP8y2kQV3Gvj6GbAFMe6MEWpwnLbl8S87xm7C7fkSOBNTBHsmO7sZ14z284oyMZSmNg__&Key-Pair-Id=APKAJ4GOPJEICF5TREYA&Expires=1580026714");
+                player.setDataSource(bonjour[indexOfSongs].getPlayURL());
+                player.prepare();
+                player.start();
+                playBtn.setText("Pause");
+                musicIsPlaying = true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void stopMusic(View view) {
-        if(player.isPlaying()) {
+        if(musicIsPlaying) {
             playBtn.setText("Play");
         }
         
         player.stop();
-        player = MediaPlayer.create(MainActivity.this, R.raw.song);
+        musicIsPaused = false;
+        musicIsPlaying = false;
+        //player = MediaPlayer.create(MainActivity.this, R.raw.song);
     }
 
     public void nextSong(View view) {
-        // TODO
+        player.stop();
+        musicIsPaused = false;
+        musicIsPlaying = false;
+        if(indexOfSongs != bonjour.length) {
+            indexOfSongs++;
+        }
+        playMusic(view);
+
     }
 
     public void prevSong(View view) {
-        // TODO
+        player.stop();
+        musicIsPaused = false;
+        musicIsPlaying = false;
+        if(indexOfSongs != 0){
+            indexOfSongs--;
+        }
+        playMusic(view);
     }
 
     public void getLocationButtonClicked(View view){
@@ -169,8 +210,11 @@ public class MainActivity extends AppCompatActivity {
                                 if (location == null) {
                                     requestNewLocationData();
                                 } else {
-                                    latitudeText.setText(location.getLatitude()+"");
-                                    longitudeText.setText(location.getLongitude()+"");
+                                    Context context = getApplicationContext();
+                                    Toast.makeText(context, "Latitude: " + location.getLatitude(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(context, "Longitude: " + location.getLongitude(), Toast.LENGTH_LONG).show();
+//                                    latitudeText.setText(location.getLatitude()+"");
+//                                    longitudeText.setText(location.getLongitude()+"");
                                 }
                             }
                         }
@@ -207,8 +251,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onLocationResult(LocationResult locationResult) {
             Location mLastLocation = locationResult.getLastLocation();
-            latitudeText.setText(mLastLocation.getLatitude()+"");
-            longitudeText.setText(mLastLocation.getLongitude()+"");
+            Context context = getApplicationContext();
+            Toast.makeText(context, "Latitude: " + mLastLocation.getLatitude(), Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Longitude: " + mLastLocation.getLongitude(), Toast.LENGTH_LONG).show();
+//            latitudeText.setText(mLastLocation.getLatitude()+"");
+//            longitudeText.setText(mLastLocation.getLongitude()+"");
         }
     };
 
@@ -251,5 +298,13 @@ public class MainActivity extends AppCompatActivity {
         if (checkPermissions()) {
             getLastLocation();
         }
+    }
+
+
+    public void createMockListSong(){
+        Song song1 = new Song(60046007,"Alt - Industrial","Rock",362,"Test","Ministry", "https://cdn.apps.playnetwork.com/master/a5931c0db476ea9e4406dfd0a362e8839190e0ef38a4d52b397989480b85b7b4.ogg?Signature=RlzYGfhfT4y70LUTL47KlXOiIWKEsBA0xz0o~Qj0kur5vu9k1aLn1Zj3yvHSzllJ2MVC3o2qUyfnt0UXXK1pUQxGszdHSGEeSKaSY8~8NsUA5l3qP3hjuH9LbZfTZEz-xYdnY8MDugQ1KMcfkk~HqLETwMN0~nkYVyIH3ZeVNti~Zjvxb6B4Natx5ZG6U0mG22~vidkCSpatX7zXDbebMCGdyuLe4YTE3yYRHHrFE0ZMYWTwvMbfTZC7D0nSRr16n7rl2HN~rE0e~pJv3qgh~xn0~hfT4UbhHlml34hmPwkx5PoGsB1A97LkOG2A8lASrtUaaxR9bwwKZXPvAmOFZw__&Key-Pair-Id=APKAJ4GOPJEICF5TREYA&Expires=1580044175");
+        Song song2 = new Song(45301912,"Heavy Metal","Rock",400,"Test","Prong", "https://cdn.apps.playnetwork.com/master/bd4a1bcb2dbfe9bfc8058cef0ad0b9adfc16591159471e08fc0fed6fefd9e995.ogg?Signature=K3rk3a3-IeW4fTO-poUILGp5Fb5BQDVDxuhqTdTkWc1-KDTKga8-HcQ8TdkpP51TFLJ8ozdcKQ0Ri1i-W4jIjL0QYSj2zmOUlKoxXhDpXI1bBgeH-YyxeUWSqmGECP7nM~6Fl5dQr7CR3BVtQsrqsgCLZJvfQHe3VQwX6cv7OavsWQZ36dE3ZdHLRQdIr-S9E61VSoYQs~Wj63fRVNULi~FLWIc7xZ7jGD47siCNFu0Q7lZxpuouJlOK8J8CDb7sdMcizLWy3LfsQ04bmWWohtffFNSe1g-oRJ7F-HRRdcna-zlr98REIsACJ04RGm8sSo3~949U4nbBZ2ys8cxaBA__&Key-Pair-Id=APKAJ4GOPJEICF5TREYA&Expires=1580044251");
+        bonjour[0] = song1;
+        bonjour[1] = song2;
     }
 }
