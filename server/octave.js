@@ -24,7 +24,7 @@ module.exports.search = function (query, size) {
 
         req.end(function (res) {
             if (res.error) reject(res.error);
-            else resolve(res.body);
+            else resolve(res.body.songs);
         });
     })
 }
