@@ -37,6 +37,10 @@ public class SearchingActivity extends AppCompatActivity implements SearchView.O
         showTheseParentlist = new ArrayList<ParentRow>();
     }
 
+    public void onSearch(View view) {
+
+    }
+
     private void loadData() {
         ArrayList<ChildRow> childRows = new ArrayList<ChildRow>();
         ParentRow parentRow = null;

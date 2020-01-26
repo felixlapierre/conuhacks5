@@ -20,6 +20,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Looper;
 import android.provider.Settings;
@@ -27,6 +29,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +37,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.CollationElementIterator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -61,6 +65,11 @@ public class MainActivity extends AppCompatActivity {
     int indexOfSongs = 0;
     Song[] bonjour = new Song[2];
 
+    private RecyclerView recyclerView;
+    private RecyclerView.Adapter adapter;
+    private RecyclerView.LayoutManager layoutManager;
+    private String[] searchResults;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,7 +81,28 @@ public class MainActivity extends AppCompatActivity {
         createMockListSong();
         //player = MediaPlayer.create(MainActivity.this, R.raw.song);
 
+        final List<String> searchResults = new ArrayList<String>();
+        searchResults.add("song1");
+        searchResults.add("song2");
+        recyclerView = findViewById(R.id.my_recycler_view);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new SearchResultItem(searchResults);
+        recyclerView.setAdapter(adapter);
 
+        SearchView searchview = findViewById(R.id.searchView);
+        searchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                insertSearchResults(query);
+                return true;
+            }
+        });
 
 //        latitudeText = findViewById(R.id.latitudeText);
 //        longitudeText = findViewById(R.id.longitudeText);
@@ -100,9 +130,22 @@ public class MainActivity extends AppCompatActivity {
                     content += "id: " + song.getId() + "\n";
                     content += "title: " + song.getTitle();
 
-                    getSongResult.append(content);
+                    //getSongResult.append(content);
                 }
                  //getSongResult.append(response.body());
+
+                searchResults.clear();
+
+                String[] dataset = new String[songs.size()];
+                int i = 0;
+                for(Song s : songs) {
+                    searchResults.add(s.getTitle());
+                    if(i >= 10)
+                        break;
+                }
+                adapter.notifyDataSetChanged();
+
+
             }
 
             @Override
@@ -110,6 +153,10 @@ public class MainActivity extends AppCompatActivity {
                 getSongResult.setText("LIGMA BALLS" + t.getMessage());
             }
         });
+    }
+
+    public void onSearchBaybee(View view) {
+
     }
 
     @Override
@@ -305,5 +352,53 @@ public class MainActivity extends AppCompatActivity {
         Song song2 = new Song(45301912,"Heavy Metal","Rock",400,"Test","Prong", "https://cdn.apps.playnetwork.com/master/bd4a1bcb2dbfe9bfc8058cef0ad0b9adfc16591159471e08fc0fed6fefd9e995.ogg?Signature=K3rk3a3-IeW4fTO-poUILGp5Fb5BQDVDxuhqTdTkWc1-KDTKga8-HcQ8TdkpP51TFLJ8ozdcKQ0Ri1i-W4jIjL0QYSj2zmOUlKoxXhDpXI1bBgeH-YyxeUWSqmGECP7nM~6Fl5dQr7CR3BVtQsrqsgCLZJvfQHe3VQwX6cv7OavsWQZ36dE3ZdHLRQdIr-S9E61VSoYQs~Wj63fRVNULi~FLWIc7xZ7jGD47siCNFu0Q7lZxpuouJlOK8J8CDb7sdMcizLWy3LfsQ04bmWWohtffFNSe1g-oRJ7F-HRRdcna-zlr98REIsACJ04RGm8sSo3~949U4nbBZ2ys8cxaBA__&Key-Pair-Id=APKAJ4GOPJEICF5TREYA&Expires=1580044251");
         bonjour[0] = song1;
         bonjour[1] = song2;
+    }
+
+    private void insertSearchResults(String query) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://172.30.185.252:3000/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        TuneInApi tuneInApi = retrofit.create(TuneInApi.class);
+        Call<List<Song>> call = tuneInApi.getSongs();
+        call.enqueue(new Callback<List<Song>>() {
+            @Override
+            public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
+                if(!response.isSuccessful()) {
+                    getSongResult.setText("Code: " + response.code());
+                    return;
+                }
+
+                List<Song> songs = response.body();
+                for(Song song : songs) {
+                    String content = "\n";
+                    content += "id: " + song.getId() + "\n";
+                    content += "title: " + song.getTitle();
+
+                    //getSongResult.append(content);
+                }
+                //getSongResult.append(response.body());
+
+                searchResults.clear();
+
+                String[] dataset = new String[songs.size()];
+                int i = 0;
+                for(Song s : songs) {
+                    searchResults.add(s.getTitle());
+                    if(i >= 10)
+                        break;
+                }
+                adapter.notifyDataSetChanged();
+
+
+            }
+
+            @Override
+            public void onFailure(Call<List<Song>> call, Throwable t) {
+                getSongResult.setText("LIGMA BALLS" + t.getMessage());
+            }
+        });
+
     }
 }
