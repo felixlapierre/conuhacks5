@@ -13,4 +13,7 @@ public interface TuneInApi {
 
     @GET("play")
     Call<List<String>> getPLayURL(@Query("id") long id);
+
+    @GET("nearby")
+    Call<List<Song>> getPLayURL();
 }
